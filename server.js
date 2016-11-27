@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const passport = require('passport');
 const mongoose = require('mongoose');
+var FacebookStrategy = require('passport-facebook').Strategy;
 const app = express();
 
 //Config
@@ -8,10 +10,13 @@ var config = require('./config.json');
 
 // Models
 var Move = require('./models/move.js');
+var User = require('./models/user.js');
 
 // Middleware
-app.use(bodyParser.urlencoded({extended: true}))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Handles any CORS errors
 app.use(function(req, res, next) {
@@ -45,6 +50,39 @@ MongoClient.connect('mongodb://<username>:<password>@ds159497.mlab.com:59497/mov
 	})
 })
 */
+
+passport.use(new FacebookStrategy({
+  clientID: config.facebookAuth.clientID,
+  clientSecret: config.facebookAuth.clientSecret,
+  callbackURL: 'http://localhost:3000/auth/facebook/callback'
+}, function(accessToken, refreshToken, profile, done) {
+  process.nextTick(function() {
+    done(null, profile);
+  });
+}));
+
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(obj, done) {
+  done(null, obj);
+});
+
+app.get('/auth/facebook', passport.authenticate('facebook'));
+
+app.get('/auth/facebook/callback', passport.authenticate('facebook', {
+  successRedirect: '/success',
+  failureRedirect: '/error'
+}));
+
+app.get('/success', function(req, res, next) {
+  res.send('Successfully logged in.');
+});
+
+app.get('/error', function(req, res, next) {
+  res.send("Error logging in.");
+});
 
 // Handlers
 app.route('/')
