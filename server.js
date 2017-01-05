@@ -113,9 +113,6 @@ app.post('/api/FBauthenticate', function(req, res) {
 	}, function(err, user) {
 		if (err) throw err;
 
-		console.log(req.body.social_token);
-
-
 		// If no user exists, create one
 		if (!user) {
 			var newUser = new User({

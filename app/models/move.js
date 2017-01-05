@@ -12,7 +12,10 @@ var MoveSchema = new mongoose.Schema({
 		lat: Number 
 	},
 	stats: {
-		people: Number
+		people: Number,
+		fun: Number,
+		meh: Number,
+		dead: Number
 	},
 	updated_at: { type: Date, default: Date.now }
 });
