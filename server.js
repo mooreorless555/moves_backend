@@ -81,7 +81,7 @@ app.post('/api/signup', function(req, res) {
 
 app.post('/api/authenticate', function(req, res) {
 	User.findOne({
-		username: req.body.username
+		name: req.body.name
 	}, function(err, user) {
 		if (err) throw err;
 
@@ -119,6 +119,9 @@ app.post('/api/FBauthenticate', function(req, res) {
 				email: req.body.email,
 				name: req.body.name,
 				password: req.body.social_token
+				facebook: {
+					social_token: req.body.social_token
+				}
 			});
 
 			// save new user
