@@ -81,7 +81,7 @@ app.post('/api/signup', function(req, res) {
 
 app.post('/api/authenticate', function(req, res) {
 	User.findOne({
-		name: req.body.name
+		email: req.body.email
 	}, function(err, user) {
 		if (err) throw err;
 
@@ -118,7 +118,7 @@ app.post('/api/FBauthenticate', function(req, res) {
 			var newUser = new User({
 				email: req.body.email,
 				name: req.body.name,
-				password: req.body.social_token
+				password: req.body.social_token,
 				facebook: {
 					social_token: req.body.social_token
 				}
@@ -129,7 +129,8 @@ app.post('/api/FBauthenticate', function(req, res) {
 				if(err) {
 					return res.json({success: false, msg: 'Username already exists'});
 				}
-				res.json({success: true, msg: 'Successful created new user.'});
+				var token = jwt.encode(user, config.secret);
+				res.json({success: true, msg: 'Successful created new user.', token: 'JWT ' + token});
 			});
 
 		} else {
@@ -143,8 +144,8 @@ app.post('/api/FBauthenticate', function(req, res) {
 	});
 });
 
-app.get('/api/profile', isLoggedIn, function(req, res) {
-	res.send("Logged in");
+app.post('/api/profile', isLoggedIn, function(req, res) {
+	res.json(req.user);
 });
 
 
@@ -162,6 +163,7 @@ function isLoggedIn(req, res, next) {
 			if (!user) {
 				res.redirect('/api/signup');
 			} else {
+				req.user = user;
 				return next();
 			}
 		});
