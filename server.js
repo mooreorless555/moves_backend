@@ -1,22 +1,32 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const passport = require('passport');
-const mongoose = require('mongoose');
-var FacebookStrategy = require('passport-facebook').Strategy;
-const app = express();
+var express 			= require('express');
+var bodyParser 			= require('body-parser');
+var passport 			= require('passport');
+var mongoose 			= require('mongoose');
+var morgan 				= require('morgan');
+//var FacebookStrategy 	= require('passport-facebook').Strategy;
 
-//Config
-var config = require('./config.json');
+var app = express();
+
+var jwt		= require('jwt-simple');
+var config 	= require('./config/auth');
+
 
 // Models
-var Move = require('./models/move.js');
-var User = require('./models/user.js');
+var Move = require('./app/models/move.js');
+var User = require('./app/models/user.js');
 
 // Middleware
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
+
+
+// morgan logs requests to the console
+app.use(morgan('dev'));
+
+/*
 app.use(passport.initialize());
 app.use(passport.session());
+*/
 
 // Handles any CORS errors
 app.use(function(req, res, next) {
@@ -38,19 +48,140 @@ mongoose.connect('mongodb://' + config.db.username + ':' + config.db.password + 
 		console.log('[+] Listening on port 3000')
 	})
 })
-/*
-const MongoClient = require('mongodb').MongoClient
-var db
 
-MongoClient.connect('mongodb://<username>:<password>@ds159497.mlab.com:59497/movespractice', (err, database) => {
-	if (err) return console.log(err)
-	db = database
-	app.listen(3000, () => {
-		console.log('listening on 3000')
-	})
-})
+require('./config/passport')(passport);
+
+/*
+app.post('/api/signup', passport.authenticate('jwt-signup', {
+	successRedirect : '/api/profile',
+	failureRedirect : '/api/signup'
+}))
 */
 
+app.post('/api/signup', function(req, res) {
+	if(!req.body.email || !req.body.name || !req.body.password) {
+		res.json({success: false, msg: 'Please pass email, name and password.'});
+	} else {
+		var newUser = new User({
+			email: req.body.email,
+			name: req.body.name,
+			password: req.body.password
+		});
+
+		// save new user
+		newUser.save(function(err) {
+			if(err) {
+				return res.json({success: false, msg: 'Email already exists'});
+			}
+			res.json({success: true, msg: 'Successful created new user.'});
+		});
+	}
+});
+
+
+app.post('/api/authenticate', function(req, res) {
+	User.findOne({
+		username: req.body.username
+	}, function(err, user) {
+		if (err) throw err;
+
+		if (!user) {
+			res.send({success: false, msg: 'Authentication failed. User not found.'});
+		} else {
+			user.comparePassword(req.body.password, function(err, isMatch) {
+				if (isMatch && !err) {
+					var token = jwt.encode(user, config.secret);
+
+					res.json({success: true, token: 'JWT ' + token});
+				} else {
+					res.send({success: false, msg: 'Authentication failed. Wrong password.'});
+				}
+			});
+		}
+	});
+});
+
+
+app.post('/api/FBauthenticate', function(req, res) {
+	User.findOne({
+		facebook: {
+			token: req.body.social_token
+		}
+	}, function(err, user) {
+		if (err) throw err;
+
+		console.log(req.body.social_token);
+
+
+		// If no user exists, create one
+		if (!user) {
+			var newUser = new User({
+				email: req.body.email,
+				name: req.body.name,
+				password: req.body.social_token
+			});
+
+			// save new user
+			newUser.save(function(err) {
+				if(err) {
+					return res.json({success: false, msg: 'Username already exists'});
+				}
+				res.json({success: true, msg: 'Successful created new user.'});
+			});
+
+		} else {
+			if (req.body.refresh_token) {
+				user.facebook.social_token = req.body.refresh_token;
+			}
+
+			var token = jwt.encode(user, config.secret);
+			res.json({success: true, token: 'JWT ' + token});
+		}
+	});
+});
+
+app.get('/api/profile', isLoggedIn, function(req, res) {
+	res.send("Logged in");
+});
+
+
+function isLoggedIn(req, res, next) {
+	var token = getToken(req.headers);
+
+	if (token) {
+		var decoded = jwt.decode(token, config.secret);
+		console.log(decoded);
+		User.findOne({
+			username: decoded.username
+		}, function(err, user) {
+			if (err) throw err;
+
+			if (!user) {
+				res.redirect('/api/signup');
+			} else {
+				return next();
+			}
+		});
+	} else {
+		res.redirect('/api/signup');
+	}
+}
+
+getToken = function(headers) {
+	if (headers && headers.authorization) {
+		var parted = headers.authorization.split(' ');
+		
+		if (parted.length === 2) {
+			return parted[1];
+		} else {
+			return null;
+		}
+	} else {
+		return null;
+	}
+};
+
+/*
 passport.use(new FacebookStrategy({
   clientID: config.facebookAuth.clientID,
   clientSecret: config.facebookAuth.clientSecret,
@@ -83,7 +214,7 @@ app.get('/success', function(req, res, next) {
 app.get('/error', function(req, res, next) {
   res.send("Error logging in.");
 });
-
+*/
 // Handlers
 app.route('/')
 	// GET all moves
@@ -132,3 +263,4 @@ app.route('/moves/:id')
 			console.log('Move deleted');
 		})
 	})
+
