@@ -161,14 +161,14 @@ function isLoggedIn(req, res, next) {
 			if (err) throw err;
 
 			if (!user) {
-				res.redirect('/api/signup');
+				res.json({success: false, msg: 'No user found'});
 			} else {
 				req.user = user;
 				return next();
 			}
 		});
 	} else {
-		res.redirect('/api/signup');
+		res.json({success: false, msg: 'Please pass a token'});
 	}
 }
 
