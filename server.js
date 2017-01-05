@@ -103,6 +103,9 @@ app.post('/api/authenticate', function(req, res) {
 
 
 app.post('/api/FBauthenticate', function(req, res) {
+	
+	console.log(req.body.social_token);
+
 	User.findOne({
 		facebook: {
 			token: req.body.social_token
