@@ -144,7 +144,7 @@ app.post('/api/FBauthenticate', function(req, res) {
 	});
 });
 
-app.post('/api/profile', isLoggedIn, function(req, res) {
+app.get('/api/profile', isLoggedIn, function(req, res) {
 	res.json(req.user);
 });
 
