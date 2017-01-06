@@ -223,7 +223,7 @@ app.get('/error', function(req, res, next) {
 // Handlers
 app.route('/')
 	// GET all moves
-	.get((req, res) => {
+	.get(isLoggedIn, (req, res) => {
 		Move.find((err, moves) => {
 			if (err) return console.log(err);
 			console.log('[+] Moves fetched');
