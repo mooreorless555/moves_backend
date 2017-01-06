@@ -129,7 +129,7 @@ app.post('/api/FBauthenticate', function(req, res) {
 				if(err) {
 					return res.json({success: false, msg: 'Username already exists'});
 				}
-				var token = jwt.encode(user, config.secret);
+				var token = jwt.encode(newUser, config.secret);
 				res.json({success: true, msg: 'Successful created new user.', token: 'JWT ' + token});
 			});
 
@@ -256,9 +256,19 @@ app.route('/')
 app.route('/moves/:id')
 	// GET singular move
 	.get((req, res) => {
-		var cursor = db.collection('moves').findOne({id: req.params.id}, (err, result) => {
+		console.log(req.params.id);
+		console.log(mongoose.Types.ObjectId.isValid(req.params.id));
+		Move.findById(new mongoose.Types.ObjectId(req.params.id), (err, move) => {
 			if (err) return res.send(500, err)
-			res.send(results)
+			
+			res.json(move)
+		})
+	})
+	// UPDATE move
+	.put((req, res) => {
+		Move.findOneAndUpdate({id: req.params.id}, req.body, (err, result) => {
+			if (err) return res.send(err)
+			res.send(result);
 		})
 	})
 	// DELETE move
