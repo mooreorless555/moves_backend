@@ -20,11 +20,10 @@ var UserSchema = new mongoose.Schema({
 		type: Boolean,
 		default: false
 	},
-	facebook: {
-		id: String,
-		token: String,
-		email: String,
-		name: String
+	facebook_token: {
+		type: String,
+		unique: true,
+		require: false
 	}
 });
 
