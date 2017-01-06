@@ -111,7 +111,7 @@ app.post('/api/FBauthenticate', function(req, res) {
 			token: req.body.social_token
 		}
 	}, function(err, user) {
-		if (err) throw err;
+		if (err) console.log(err);
 
 		// If no user exists, create one
 		if (!user) {
@@ -127,8 +127,11 @@ app.post('/api/FBauthenticate', function(req, res) {
 			// save new user
 			newUser.save(function(err) {
 				if(err) {
+					console.log("Couldn't save user: " + err + "User: " + newUser);
 					return res.json({success: false, msg: 'Username already exists'});
 				}
+				console.log("New user: " + newUser);
+				
 				var token = jwt.encode(newUser, config.secret);
 				res.json({success: true, msg: 'Successful created new user.', token: 'JWT ' + token});
 			});
@@ -137,7 +140,7 @@ app.post('/api/FBauthenticate', function(req, res) {
 			if (req.body.refresh_token) {
 				user.facebook.social_token = req.body.refresh_token;
 			}
-
+			console.log("found existing user: " + user);
 			var token = jwt.encode(user, config.secret);
 			res.json({success: true, token: 'JWT ' + token});
 		}
@@ -151,6 +154,8 @@ app.get('/api/profile', isLoggedIn, function(req, res) {
 
 function isLoggedIn(req, res, next) {
 	var token = getToken(req.headers);
+	console.log(req.headers);
+	console.log(token);
 
 	if (token) {
 		var decoded = jwt.decode(token, config.secret);
@@ -223,7 +228,7 @@ app.get('/error', function(req, res, next) {
 // Handlers
 app.route('/')
 	// GET all moves
-	.get((req, res) => {
+	.get(isLoggedIn, (req, res) => {
 		Move.find((err, moves) => {
 			if (err) return console.log(err);
 			console.log('[+] Moves fetched');
