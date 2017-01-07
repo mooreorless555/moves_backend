@@ -129,6 +129,7 @@ app.post('/api/FBauthenticate', function(req, res) {
 				console.log("New user: " + newUser);
 				
 				var token = jwt.encode(newUser, config.secret);
+				console.log("token: " + token);
 				res.json({success: true, msg: 'Successful created new user.', token: 'JWT ' + token});
 			});
 
@@ -138,6 +139,7 @@ app.post('/api/FBauthenticate', function(req, res) {
 			}
 			console.log("found existing user: " + user);
 			var token = jwt.encode(user, config.secret);
+			console.log("token: " + token);
 			res.json({success: true, token: 'JWT ' + token});
 		}
 	});
@@ -224,7 +226,7 @@ app.get('/error', function(req, res, next) {
 // Handlers
 app.route('/')
 	// GET all moves
-	.get(isLoggedIn, (req, res) => {
+	.get((req, res) => {
 		Move.find((err, moves) => {
 			if (err) return console.log(err);
 			console.log('[+] Moves fetched');
