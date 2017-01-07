@@ -20,10 +20,9 @@ var UserSchema = new mongoose.Schema({
 		type: Boolean,
 		default: false
 	},
-	facebook_token: {
+	social_token: {
 		type: String,
-		unique: true,
-		require: false
+		required: false
 	}
 });
 

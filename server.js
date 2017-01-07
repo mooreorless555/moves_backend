@@ -104,12 +104,10 @@ app.post('/api/authenticate', function(req, res) {
 
 app.post('/api/FBauthenticate', function(req, res) {
 	
-	console.log(req.body.social_token);
+	console.log(req.body);
 
 	User.findOne({
-		facebook: {
-			token: req.body.social_token
-		}
+		email: req.body.email
 	}, function(err, user) {
 		if (err) console.log(err);
 
@@ -119,9 +117,7 @@ app.post('/api/FBauthenticate', function(req, res) {
 				email: req.body.email,
 				name: req.body.name,
 				password: req.body.social_token,
-				facebook: {
-					social_token: req.body.social_token
-				}
+				social_token: req.body.social_token
 			});
 
 			// save new user
