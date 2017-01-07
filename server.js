@@ -224,6 +224,39 @@ app.get('/error', function(req, res, next) {
 });
 */
 // Handlers
+
+app.route('/')
+	// GET all moves
+	.get(isLoggedIn, (req, res) => {
+		Move.find((err, moves) => {
+			if (err) return console.log(err);
+			console.log('[+] Moves fetched');
+			console.log(moves);
+			res.json(moves);
+		})
+		//res.sendFile(__dirname + '/index.html');
+	})
+	
+	.post((req, res) => {
+		//console.log(req)
+		console.log(req.body)
+		console.log(req.body.name)
+		Move.create(req.body, (err, post) => {
+			if (err) return console.log(err);
+			console.log('[+] Move created');
+			console.log(post);
+			res.json(post);
+			//res.redirect('/');
+		})
+	})
+
+	.delete((req, res) => {
+		db.collection('moves').findOneAndDelete({name: req.body.name}, (err, result) => {
+			if (err) return res.send(500, err)
+			res.send('Move deleted')
+		})
+	})
+
 app.route('/')
 	// GET all moves
 	.get((req, res) => {
