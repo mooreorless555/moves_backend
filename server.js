@@ -158,8 +158,9 @@ function isLoggedIn(req, res, next) {
 	if (token) {
 		var decoded = jwt.decode(token, config.secret);
 		console.log(decoded);
+		console.log(decoded.email);
 		User.findOne({
-			username: decoded.username
+			email: decoded.email
 		}, function(err, user) {
 			if (err) throw err;
 
@@ -225,7 +226,7 @@ app.get('/error', function(req, res, next) {
 */
 // Handlers
 
-app.route('/')
+app.route('/api/')
 	// GET all moves
 	.get(isLoggedIn, (req, res) => {
 		Move.find((err, moves) => {
@@ -294,7 +295,7 @@ app.route('/moves/:id')
 	.get((req, res) => {
 		console.log(req.params.id);
 		console.log(mongoose.Types.ObjectId.isValid(req.params.id));
-		Move.findById(new mongoose.Types.ObjectId(req.params.id), (err, move) => {
+		Move.findById(req.params.id, (err, move) => {
 			if (err) return res.send(500, err)
 			
 			res.json(move)
@@ -302,7 +303,8 @@ app.route('/moves/:id')
 	})
 	// UPDATE move
 	.put((req, res) => {
-		Move.findOneAndUpdate({id: req.params.id}, req.body, (err, result) => {
+		console.log(req.body);
+		Move.findByIdAndUpdate(req.params.id, req.body, (err, result) => {
 			if (err) return res.send(err)
 			res.send(result);
 		})
