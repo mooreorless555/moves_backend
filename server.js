@@ -12,8 +12,8 @@ var config 	= require('./config/auth');
 
 
 // Models
-var Move = require('./app/models/move.js');
 var User = require('./app/models/user.js');
+var Move = require('./app/models/move.js');
 
 // Middleware
 app.use(bodyParser.urlencoded({extended: true}));
@@ -159,9 +159,12 @@ function isLoggedIn(req, res, next) {
 		var decoded = jwt.decode(token, config.secret);
 		console.log(decoded);
 		console.log(decoded.email);
-		User.findOne({
+		User
+		.findOne({
 			email: decoded.email
-		}, function(err, user) {
+		})
+		.populate('moves') 
+		.exec(function(err, user) {
 			if (err) throw err;
 
 			if (!user) {
@@ -238,20 +241,23 @@ app.route('/api/')
 		//res.sendFile(__dirname + '/index.html');
 	})
 	
-	.post((req, res) => {
+	.post(isLoggedIn, (req, res) => {
 		//console.log(req)
-		console.log(req.body)
-		console.log(req.body.name)
+		console.log(req.body);
+		console.log(req.body.name);
+		console.log("user: " + req.user);
 		Move.create(req.body, (err, post) => {
 			if (err) return console.log(err);
 			console.log('[+] Move created');
+			req.user.moves.push(post);
+			req.user.save()
 			console.log(post);
 			res.json(post);
 			//res.redirect('/');
 		})
 	})
 
-	.delete((req, res) => {
+	.delete(isLoggedIn, (req, res) => {
 		db.collection('moves').findOneAndDelete({name: req.body.name}, (err, result) => {
 			if (err) return res.send(500, err)
 			res.send('Move deleted')
@@ -277,6 +283,8 @@ app.route('/')
 		Move.create(req.body, (err, post) => {
 			if (err) return console.log(err);
 			console.log('[+] Move created');
+			req.user.moves.push(post);
+			req.user.save()
 			console.log(post);
 			res.json(post);
 			//res.redirect('/');
@@ -292,7 +300,7 @@ app.route('/')
 
 app.route('/moves/:id')
 	// GET singular move
-	.get((req, res) => {
+	.get(isLoggedIn, (req, res) => {
 		console.log(req.params.id);
 		console.log(mongoose.Types.ObjectId.isValid(req.params.id));
 		Move.findById(req.params.id, (err, move) => {

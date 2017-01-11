@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema
 
 var MoveSchema = new mongoose.Schema({
 	info: {
@@ -17,7 +18,11 @@ var MoveSchema = new mongoose.Schema({
 		meh: Number,
 		dead: Number
 	},
+	hosts: [{
+		type: Schema.Types.ObjectId,
+		ref: 'User'
+	}],
 	updated_at: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Move', MoveSchema);
+module.exports = mongoose.model("Move", MoveSchema);

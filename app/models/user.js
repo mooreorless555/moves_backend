@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
 var bcrypt = require('bcrypt');
 //var passportLocalMongoose = require('passport-local-mongoose');
 
@@ -23,7 +24,11 @@ var UserSchema = new mongoose.Schema({
 	social_token: {
 		type: String,
 		required: false
-	}
+	},
+	moves: [{
+		type: Schema.Types.ObjectId,
+		ref: 'Move'
+	}]
 });
 
 UserSchema.pre('save', function (next) {
@@ -57,4 +62,4 @@ UserSchema.methods.comparePassword = function(password, cb) {
 };
 
 //User.plugin(passportLocalMongoose);
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model("User", UserSchema);
