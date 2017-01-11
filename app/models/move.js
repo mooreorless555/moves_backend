@@ -4,13 +4,14 @@ var Schema = mongoose.Schema
 var MoveSchema = new mongoose.Schema({
 	info: {
 		name:String,
+		location: String,
 		capacity: Number,
 		hasAlcohol: Boolean,
 		extraInfo: String
 	},
-	location: { 
-		long: Number, 
-		lat: Number 
+	LatLng: { 
+		lat: Number, 
+		lng: Number 
 	},
 	stats: {
 		people: Number,
