@@ -130,7 +130,7 @@ app.post('/api/FBauthenticate', function(req, res) {
 				
 				var token = jwt.encode(newUser, config.secret);
 				console.log("token: " + token);
-				res.json({success: true, msg: 'Successful created new user.', token: 'JWT ' + token});
+				res.json({success: true, msg: 'Successful created new user.', token: 'JWT ' + token, user: newUser});
 			});
 
 		} else {
@@ -140,7 +140,7 @@ app.post('/api/FBauthenticate', function(req, res) {
 			console.log("found existing user: " + user);
 			var token = jwt.encode(user, config.secret);
 			console.log("token: " + token);
-			res.json({success: true, token: 'JWT ' + token});
+			res.json({success: true, token: 'JWT ' + token, user: user});
 		}
 	});
 });
@@ -306,7 +306,7 @@ app.route('/moves/:id')
 		console.log(req.body);
 		Move.findByIdAndUpdate(req.params.id, req.body, (err, result) => {
 			if (err) return res.send(err)
-			res.send(result);
+			res.send({success: true});
 		})
 	})
 	// DELETE move
