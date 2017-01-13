@@ -146,19 +146,19 @@ app.post('/api/FBauthenticate', function(req, res) {
 });
 
 app.get('/api/profile', isLoggedIn, function(req, res) {
+	console.log("Got User: " + req.user);
 	res.json(req.user);
 });
 
 
 function isLoggedIn(req, res, next) {
 	var token = getToken(req.headers);
-	console.log(req.headers);
-	console.log(token);
+
+	console.log("Received token: " + token);
 
 	if (token) {
 		var decoded = jwt.decode(token, config.secret);
-		console.log(decoded);
-		console.log(decoded.email);
+
 		User
 		.findOne({
 			email: decoded.email
@@ -229,6 +229,10 @@ app.get('/error', function(req, res, next) {
 */
 // Handlers
 
+/*
+	Routes for getting, adding, and deleting moves
+	*** REQUIRES AUTHENTICATION ***
+*/
 app.route('/api/')
 	// GET all moves
 	.get(isLoggedIn, (req, res) => {
@@ -248,12 +252,18 @@ app.route('/api/')
 		console.log("user: " + req.user);
 		Move.create(req.body, (err, post) => {
 			if (err) return console.log(err);
-			console.log('[+] Move created');
+
+			// Add user to hosts array of move
+			post.hosts.push(req.user);
+			post.save();
+
+			// Add move to the user's moves
 			req.user.moves.push(post);
-			req.user.save()
-			console.log(post);
+			req.user.save();
+
+			console.log("Created Move: " + post);
+
 			res.json(post);
-			//res.redirect('/');
 		})
 	})
 
@@ -263,6 +273,8 @@ app.route('/api/')
 			res.send('Move deleted')
 		})
 	})
+
+
 
 app.route('/')
 	// GET all moves
