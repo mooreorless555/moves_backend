@@ -236,7 +236,10 @@ app.get('/error', function(req, res, next) {
 app.route('/api/')
 	// GET all moves
 	.get(isLoggedIn, (req, res) => {
-		Move.find((err, moves) => {
+		Move.
+		find()
+		.populate('hosts')
+		.exec(function(err, moves) {
 			if (err) return console.log(err);
 			console.log('[+] Moves fetched');
 			console.log(moves);
@@ -279,7 +282,10 @@ app.route('/api/')
 app.route('/')
 	// GET all moves
 	.get((req, res) => {
-		Move.find((err, moves) => {
+		Move
+		.find()
+		.populate('hosts')
+		.exec(function(err, moves) {
 			if (err) return console.log(err);
 			console.log('[+] Moves fetched');
 			console.log(moves);
@@ -322,7 +328,7 @@ app.route('/moves/:id')
 		})
 	})
 	// UPDATE move
-	.put((req, res) => {
+	.put(isLoggedIn, (req, res) => {
 		console.log(req.body);
 		Move.findByIdAndUpdate(req.params.id, req.body, (err, result) => {
 			if (err) return res.send(err)
@@ -330,7 +336,7 @@ app.route('/moves/:id')
 		})
 	})
 	// DELETE move
-	.delete((req, res) => {
+	.delete(isLoggedIn, (req, res) => {
 		Move.findByIdAndRemove(req.params.id, (err) => {
 			if (err) return res.send(500, err);
 			console.log('Move deleted');
